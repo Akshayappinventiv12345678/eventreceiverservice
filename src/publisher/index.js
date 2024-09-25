@@ -70,6 +70,12 @@ app.get('/generate', (req, res) => {
 
   res.status(200).json({ generated:"generated OK" });
 });
+
+app.get('/', (req, res) => {
+  res.status(200).send("Use, /topic/brand/orderId to get topic ,  /generate   to generate events and /webhook to push event ");
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
