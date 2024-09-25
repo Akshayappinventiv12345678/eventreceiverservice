@@ -1,6 +1,8 @@
 const axios = require('axios');
-const orders=require("../resource/orders")
+const orders=require("../static/orders");
 
+const mqttClients=require("../static/mqttclient")
+const publishData=require("../static/services")
 // Mock Webhook URLs for each brand
 const webhookUrls = {
   kfc: 'http://localhost:3000/webhook/kfc',
@@ -42,17 +44,19 @@ async function simulateOrderJourney(brand, orderId, items) {
 
   for (let i = 0; i < orderEvents.length; i++) {
     try {
+      console.log(" ------Generated------ ");
+
       console.log(`Sending "${orderEvents[i].status}" update for ${brand}, Order ID: ${orderId}`);
 
       // Send event to the brand's webhook
-      await axios.post(webhookUrls[brand], {
+      publishData(brand,{
         orderId: orderId,
         status: orderEvents[i].status,
         eta: orderEvents[i].eta,
         rider: orderEvents[i].rider,
         items: orderEvents[i].items
-      });
-
+      }).then(msg=> console.log("----Generated----",msg)).catch(err=>console.log("----Generated----",err))
+  
       // Delay between each event to simulate a real journey (2 seconds for demo purposes)
       await new Promise(resolve => setTimeout(resolve, getRandomTimeout()*1000));
 
@@ -68,13 +72,14 @@ async function simulateOrderJourney(brand, orderId, items) {
 async function simulateOrders() {
  
   // Simulate order journeys for each brand
-  // var order=orders[0];
-  // await simulateOrderJourney(order.brand, order.orderId, order.items);
+  var order=orders[0];
+  await simulateOrderJourney(order.brand, order.orderId, order.items);
 
-  for (const order of orders) {
-     simulateOrderJourney(order.brand, order.orderId, order.items);
-  }
+  // for (const order of orders) {
+  //    simulateOrderJourney(order.brand, order.orderId, order.items);
+  // }
 }
 
 // Start the order simulation
-simulateOrders();
+// simulateOrders();
+module.exports=simulateOrders;

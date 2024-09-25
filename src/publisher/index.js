@@ -1,9 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mqtt = require('mqtt');
+
 const crypto = require('crypto');
+const { Module } = require('module');
+const simulateOrders=require('./eventsgenerator')
+
 require('dotenv').config();
 const mqttServers=process.env.mqtt
+
+const  mqttClients = require('../static/mqttclient');
 // Options for connecting to the MQTT broker (optional)
 
 const app = express();
@@ -12,16 +17,6 @@ console.log(mqttServers)
 
 const orders={}
 // Initialize MQTT Clients for each brand
-
-const  mqttClients = mqtt.connect(mqttServers);
-  
-  mqttClients.on('connect', () => {
-    console.log(`Connected to  MQTT server`);
-  });
-  
-  mqttClients.on('error', (err) => {
-    console.error(`MQTT connection error `, err);
-  });
 
 
 // Hashing function for topics
@@ -38,23 +33,11 @@ app.post('/webhook/:brand', (req, res) => {
   const { brand } = req.params;
   const data = req.body;
 
-  // if (!mqttClients) {
-  //   return res.status(404).send('Brand not supported');
-  // }
 
-  // Publish to the brand's MQTT topic
-  const topic =getHashedTopic(brand, data.orderId);
-  console.log("publishing topic",topic,data);
-  // `/${brand}/updates`;
-  mqttClients.publish(topic, JSON.stringify(data), (err) => {
-    if (err) {
-      console.error(`Error publishing to ${brand}:`, err);
-      return res.status(500).send('Error publishing update');
-    }
+  publishData(brand,data).then(msg=> res.status(200).send(msg)).catch(err=>res.status(400).send("Error :",err))
+  
 
-    console.log(`Published update for ${brand} on topic: ${topic}`);
-    res.status(200).send('Update published successfully');
-  });
+
 });
 
 // Endpoint for clients to get hashed topic
@@ -66,8 +49,9 @@ app.get('/topic/:brand/:orderId', (req, res) => {
 
 
 
-app.get('/generate', (req, res) => {
 
+app.get('/generate', (req, res) => {
+  simulateOrders();
   res.status(200).json({ generated:"generated OK" });
 });
 
@@ -86,3 +70,28 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
   process.exit(1);
 });
+
+function publishData(brand,data){
+
+return new Promise((reject,resolve)=>{
+// Publish to the brand's MQTT topic
+    
+const topic =getHashedTopic(brand, data.orderId);
+console.log("publishing topic",topic,data);
+// `/${brand}/updates`;
+mqttClients.publish(topic, JSON.stringify(data), (err) => {
+  if (err) {
+    console.error(`Error publishing to ${brand}:`, err);
+    reject('Error publishing update');
+  }
+
+  console.log(`Published update for ${brand} on topic: ${topic}`);
+  resolve(`Published update for ${brand} on topic: ${topic}`);
+  
+});
+  
+})
+
+    
+
+}
