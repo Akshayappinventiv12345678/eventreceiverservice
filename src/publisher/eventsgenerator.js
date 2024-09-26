@@ -55,7 +55,7 @@ async function simulateOrderJourney(brand, orderId, items) {
         eta: orderEvents[i].eta,
         rider: orderEvents[i].rider,
         items: orderEvents[i].items
-      }).then(msg=> console.log("----Generated----",msg)).catch(err=>console.log("----Generated----",err))
+      }).then(msg=> console.log("----Generated----",msg)).catch(err=>console.log("----ErrorGenerated----",err))
   
       // Delay between each event to simulate a real journey (2 seconds for demo purposes)
       await new Promise(resolve => setTimeout(resolve, getRandomTimeout()*1000));

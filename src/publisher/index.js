@@ -34,7 +34,7 @@ app.post('/webhook/:brand', (req, res) => {
   const data = req.body;
 
 
-  publishData(brand,data).then(msg=> res.status(200).send(msg)).catch(err=>res.status(400).send("Error :",err))
+  publishData(brand,data).then(msg=> res.send(msg)).catch(err=>res.status(400).send("Error :"+err))
   
 
 
@@ -73,7 +73,7 @@ process.on('uncaughtException', (err) => {
 
 function publishData(brand,data){
 
-return new Promise((reject,resolve)=>{
+return new Promise((resolve,reject)=>{
 // Publish to the brand's MQTT topic
     
 const topic =getHashedTopic(brand, data.orderId);
@@ -81,7 +81,7 @@ console.log("publishing topic",topic,data);
 // `/${brand}/updates`;
 mqttClients.publish(topic, JSON.stringify(data), (err) => {
   if (err) {
-    console.error(`Error publishing to ${brand}:`, err);
+    console.log(`Error publishing to ${brand}:`, err);
     reject('Error publishing update');
   }
 
