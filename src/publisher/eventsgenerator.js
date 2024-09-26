@@ -33,12 +33,21 @@ async function simulateOrderJourney(brand, orderId, items) {
   const eta = getRandomETA();
   const rider = getRiderDetails();
 
+  // const orderEvents = [
+  //   { status: 'Order Placed', eta: eta, rider: rider, items: items },
+  //   { status: 'Order Prepared', eta: eta - 10, rider: rider, items: items },
+  //   { status: 'Out for Delivery', eta: eta - 5, rider: rider, items: items },
+  //   { status: 'Order Delivered', eta: 0, rider: rider, items: items }
+  // ];
   const orderEvents = [
-    { status: 'Order Placed', eta: eta, rider: rider, items: items },
-    { status: 'Order Prepared', eta: eta - 10, rider: rider, items: items },
-    { status: 'Out for Delivery', eta: eta - 5, rider: rider, items: items },
-    { status: 'Order Delivered', eta: 0, rider: rider, items: items }
-  ];
+    { status: 'Order Placed', code: 100, eta: eta, rider: rider, items: items },
+    { status: 'Order Prepared', code: 101, eta: eta - 10, rider: rider, items: items },
+    { status: 'Out of Store Geo Fence (100 meters)', code: 107, eta: eta - 8, rider: rider, items: items },
+    { status: 'Out for Delivery', code: 108, eta: eta - 7, rider: rider, items: items },
+    { status: 'Out for Delivery (2x)', code: 108, eta: eta - 5, rider: rider, items: items },
+    { status: 'Order Delivered', code: 111, eta: 0, rider: rider, items: items }
+];
+
 
 
 
@@ -52,6 +61,7 @@ async function simulateOrderJourney(brand, orderId, items) {
       publishData(brand,{
         orderId: orderId,
         status: orderEvents[i].status,
+        statuscode:orderEvents[i].code,
         eta: orderEvents[i].eta,
         rider: orderEvents[i].rider,
         items: orderEvents[i].items
