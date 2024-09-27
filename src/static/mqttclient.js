@@ -58,5 +58,5 @@ mqttClients.on('error', (err) => {
     console.error(`MQTT connection error `, err);
   });
 }
-// start();
+start();
 module.exports={mqttClients,reconnect}
