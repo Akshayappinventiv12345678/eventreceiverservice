@@ -1,7 +1,7 @@
 const axios = require('axios');
 const orders=require("../static/orders");
 
-const mqttClients=require("../static/mqttclient")
+const {mqttClients,reconnect}=require("../static/mqttclient")
 const publishData=require("../static/services")
 // Mock Webhook URLs for each brand
 const webhookUrls = {

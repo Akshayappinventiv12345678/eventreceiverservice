@@ -3,17 +3,18 @@ const bodyParser = require('body-parser');
 
 const crypto = require('crypto');
 const { Module } = require('module');
+
 const simulateOrders=require('./eventsgenerator')
 
 require('dotenv').config();
 const mqttServers=process.env.mqtt
 
-const  mqttClients = require('../static/mqttclient');
-// Options for connecting to the MQTT broker (optional)
+const {mqttClients,reconnect}=require("../static/mqttclient")
+const publishData=require("../static/services")
 
 const app = express();
 app.use(bodyParser.json());
-console.log(mqttServers)
+
 
 const orders={}
 // Initialize MQTT Clients for each brand
@@ -27,6 +28,20 @@ function getHashedTopic(brand, orderId) {
   return orderId;
 }
 
+// middleware 
+app.use((req,res,next)=>{
+  console.log("Middleware Test MQTT Connection",mqttClients.connected);
+  if(!mqttClients.connected)
+  {
+    reconnect();
+    res.send("MQTT Connection Reset try 10 sec later")
+  }
+  else{
+    next()
+  }
+
+
+})
 
 // Webhook to handle incoming brand updates
 app.post('/webhook/:brand', (req, res) => {
@@ -71,27 +86,3 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-function publishData(brand,data){
-
-return new Promise((resolve,reject)=>{
-// Publish to the brand's MQTT topic
-    
-const topic =getHashedTopic(brand, data.orderId);
-console.log("publishing topic",topic,data);
-// `/${brand}/updates`;
-mqttClients.publish(topic, JSON.stringify(data), (err) => {
-  if (err) {
-    console.log(`Error publishing to ${brand}:`, err);
-    reject('Error publishing update');
-  }
-
-  console.log(`Published update for ${brand} on topic: ${topic}`);
-  resolve(`Published update for ${brand} on topic: ${topic}`);
-  
-});
-  
-})
-
-    
-
-}

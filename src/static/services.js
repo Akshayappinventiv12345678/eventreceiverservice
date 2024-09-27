@@ -1,5 +1,5 @@
 
-const mqttClients=require("./mqttclient")
+const {mqttClients}=require("./mqttclient")
 
 // Hashing function for topics
 function getHashedTopic(brand, orderId) {
@@ -12,12 +12,13 @@ function getHashedTopic(brand, orderId) {
 
 function publishData(brand,data){
 
-    return new Promise((reject,resolve)=>{
+    return new Promise(async (resolve,reject)=>{
     // Publish to the brand's MQTT topic
-        
+    console.log("Check Connection",mqttClients.connected);
+    
     const topic =getHashedTopic(brand, data.orderId);
     console.log("publishing topic",topic,data);
-    // `/${brand}/updates`;
+    
     mqttClients.publish(topic, JSON.stringify(data), (err) => {
       if (err) {
         console.error(`Error publishing to ${brand}:`, err);
